@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  bff:
+    image: golang:latest
+    hostname: bff
+    container_name: bff
+    working_dir: /usr/local/go/src/app
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        go install github.com/githubnemo/CompileDaemon@latest
+        CompileDaemon -build='go build -o public/app' -command='./public/app'
+    volumes:
+      - ${BE_APP_PATH}:/usr/local/go/src/app:rw
+
+  fe:
+    image: node:latest
+    hostname: fe
+    container_name: fe
+    command: bash -c "yarn install && yarn start"
+    environment:
+      - NODE_ENV=dev
+    working_dir: /usr/src/app
+    volumes:
+      - ${FE_APP_PATH}:/usr/src/app:rw
+
+  nginx:
+    build: ./nginx
+    hostname: nginx
+    container_name: nginx
+    depends_on:
+      - bff
+      - fe
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${BE_APP_PATH}:/usr/local/go/src/app:cached
+      - ${FE_APP_PATH}:/usr/src/app:cached
