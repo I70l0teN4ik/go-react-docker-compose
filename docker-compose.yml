@@ -1,10 +1,10 @@
 version: '3'
 
 services:
-  bff:
+  be:
     image: golang:latest
-    hostname: bff
-    container_name: bff
+    hostname: be
+    container_name: be
     working_dir: /usr/local/go/src/app
     entrypoint: ["bash", "-c"]
     command:
@@ -30,13 +30,12 @@ services:
     hostname: nginx
     container_name: nginx
     depends_on:
-      - bff
+      - be
       - fe
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/templates:/etc/nginx/templates
       - ${BE_APP_PATH}:/usr/local/go/src/app:cached
       - ${FE_APP_PATH}:/usr/src/app:cached

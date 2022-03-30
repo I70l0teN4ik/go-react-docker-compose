@@ -21,11 +21,11 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    location ^~ /graphql {
-            proxy_pass http://bff:9000/graphql;
-            proxy_set_header Host 'cbi';
-            proxy_set_header X-Real-IP 82.214.128.26;
-            proxy_set_header X-Forwarded-For 82.214.128.26;
+    location ^~ /gql {
+            proxy_pass http://be:8080/gql;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_read_timeout 9999;
         }
@@ -36,24 +36,12 @@ server {
 }
 
 server {
-    listen 80;
-    server_name bff;
-    charset utf-8;
-    root /usr/local/go/src/app;
+  listen 80;
+  server_name be;
+  charset utf-8;
+  root /usr/local/go/src/app;
 
-    location / {
-        proxy_pass http://bff:9000/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    location ~ \.htaccess {
-        deny all;
-    }
+  location / {
+      proxy_pass http://be:8080;
+  }
 }
